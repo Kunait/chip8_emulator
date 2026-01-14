@@ -1,0 +1,6 @@
+*.log
+*.txt
+*.ch8
+roms/
+.vscode/
+chip
