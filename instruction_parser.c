@@ -285,9 +285,55 @@ uint8_t rndInt8Bit(){
     return (uint8_t) rand();
 }
 
+void drawSprite(CHIP *c, uint8_t x, uint8_t y, uint8_t n){
+
+    uint8_t lines[n];
+    for(int j = 0; j < n; j++){
+        lines[j] = c->ram[c->I+j]; 
+    }
+    y = y % 32;
+    x = x % 64;
+    
+    c->V[0xF] = 0;
+
+    for (int j = 0; j < n; j++) {
+        uint8_t currentLine8 = lines[j];
+        uint8_t currentY = (y + j) % 32;
+        
+        uint8_t bitsInFirstLine = 64 - x;
+
+        if(bitsInFirstLine >= 8){
+
+            uint64_t old = c->vram[currentY];
+            uint64_t spriteBits = ((uint64_t) currentLine8 << (56-x));
+            c->vram[currentY] ^= spriteBits;
+            if((spriteBits & old)  !=0 ) c->V[0xF] = 1;
+
+        } else{
+
+            uint8_t bitsInSecondLine = 8 - bitsInFirstLine;
+            
+            uint64_t old1 = c->vram[currentY];
+            uint64_t spriteBits1 = (uint64_t) (currentLine8 >> bitsInSecondLine);
+            c->vram[currentY] ^= spriteBits1;
+            if((spriteBits1 & old1)  !=0 ) c->V[0xF] = 1;
+
+            uint64_t old2 = c->vram[currentY];
+            uint64_t spriteBits2 = ((uint64_t) (currentLine8 << bitsInFirstLine) << 56);
+            c->vram[currentY] ^= spriteBits2;
+            if((spriteBits2 & old1)  !=0 ) c->V[0xF] = 1;
+
+        }
+
+}
+}
+
 void execute_instruction(CHIP *c, full_instr *instruction){
     
-    uint8_t x=0, y=0, kk = 0;
+    uint8_t x=0, y=0, kk = 0, n = 0;
+    uint8_t regVal, hundreds, tens, ones;
+    uint8_t digit;
+    uint16_t result;
 
     switch (instruction->instruction)
     {
@@ -358,14 +404,14 @@ void execute_instruction(CHIP *c, full_instr *instruction){
     case ADD_R_TO_R:
         x = getX(instruction->data);
         y = getY(instruction->data);
-        uint16_t result = c->V[x] + c->V[y];
+        result = c->V[x] + c->V[y];
         c->V[0xF] = (result > 0xFF) ? 1 : 0;
         c->V[x] = result & 0x00FF;
         break;   
     case SUB_R_TO_R:
         x = getX(instruction->data);
         y = getY(instruction->data);
-        uint16_t result = c->V[x] - c->V[y];
+        result = c->V[x] - c->V[y];
         c->V[0xF] = (c->V[x] > c->V[y]) ? 1 : 0;
         c->V[x] = result;
         break;  
@@ -378,7 +424,7 @@ void execute_instruction(CHIP *c, full_instr *instruction){
     case SUBN_R_TO_R:
         x = getX(instruction->data);
         y = getY(instruction->data);
-        uint16_t result = c->V[y] - c->V[x];
+        result = c->V[y] - c->V[x];
         c->V[0xF] = (c->V[y] > c->V[x]) ? 1 : 0;
         c->V[x] = result;
         break;
@@ -434,20 +480,19 @@ void execute_instruction(CHIP *c, full_instr *instruction){
         x = getX(instruction->data);
         c->I = c->I + c->V[x];
         break;
-    //TODO: Implement sprites
-    //! DOES NOT WORK YET
     case LD_SPRITE_ADDR_INTO_R:
         x = getX(instruction->data);
-        c->I = c->I + c->V[x];
+        digit = c->V[x];
+        c->I = c->ram[5*digit];
         break;
     case REG_TO_H_T_O_IN_I:
         x = getX(instruction->data);
-        uint8_t regVal = c->V[x];
-        uint8_t hundreds = regVal / 100;
+        regVal = c->V[x];
+        hundreds = regVal / 100;
         regVal = regVal - hundreds*100;
-        uint8_t tens = regVal/10;
+        tens = regVal/10;
         regVal = regVal - tens*10;
-        uint8_t ones = regVal;
+        ones = regVal;
         c->ram[c->I] = hundreds;
         c->ram[c->I+1] = tens;
         c->ram[c->I+2] = ones;
@@ -464,7 +509,12 @@ void execute_instruction(CHIP *c, full_instr *instruction){
             c->V[j] = c->ram[c->I+j];
         }
         break;
-        
+    case DISPLAY_SPRITE:
+        x = getX(instruction->data);
+        y  = getY(instruction->data);
+        n = getN(instruction->data);
+        drawSprite(c,x,y,n);
+        break;
     default:
         break;
     }

@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -6,6 +5,7 @@
 
 #include <stdbool.h>
 #include "instruction_parser.h"
+#include "chip.h"
 
 
 #define RED "\e[0;31m"
@@ -26,10 +26,14 @@ CHIP c = {0};
 
 
 
-bool run_instruction(uint16_t instruction){
-
-    printf("%04x \n", instruction);
-
+bool run_instruction(){
+    full_instr *instr = malloc(sizeof(full_instr));
+    uint16_t opcode = ((uint16_t)c.ram[PROGRAM_START_ADDRESS+c.PC]) << 8;
+    opcode |= c.ram[PROGRAM_START_ADDRESS+c.PC+1];
+    bytes_to_full_instr(opcode, instr);
+    execute_instruction(&c,instr);
+    free(instr);
+    c.PC+=2;
 }
 
 void print_instruction(uint16_t instruction, uint16_t address){
@@ -74,17 +78,128 @@ void read_rom_into_memory(char *path){
 }
 
 
-int main(int argc, char *argv) {
-    printf("Enter ROM path: \n");
-    char path[100];
-    scanf("%s", path);
-    read_rom_into_memory(path);
+void initialize_sprites(){
+    //ZERO - 0
+    c.ram[0] = 0xF0;
+    c.ram[1] = 0x90;
+    c.ram[2] = 0x90;
+    c.ram[3] = 0x90;
+    c.ram[4] = 0xF0;
 
-    
-    //printf("%llu", sizeof(chip));
-    
-    
+    //ONE - 1
+    c.ram[5] = 0x20;
+    c.ram[6] = 0x60;
+    c.ram[7] = 0x20;
+    c.ram[8] = 0x20;
+    c.ram[9] = 0x70;
 
+    //TWO - 2
+    c.ram[10] = 0xF0;
+    c.ram[11] = 0x10;
+    c.ram[12] = 0xF0;
+    c.ram[13] = 0x80;
+    c.ram[14] = 0xF0;
 
-    return 0;
+    //THREE - 3
+    c.ram[15] = 0xF0;
+    c.ram[16] = 0x10;
+    c.ram[17] = 0xF0;
+    c.ram[18] = 0x10;
+    c.ram[19] = 0xF0;
+
+    //FOUR - 4
+    c.ram[20] = 0x90;
+    c.ram[21] = 0x90;
+    c.ram[22] = 0xF0;
+    c.ram[23] = 0x10;
+    c.ram[24] = 0x10;
+
+    //FIVE - 5
+    c.ram[25] = 0xF0;
+    c.ram[26] = 0x80;
+    c.ram[27] = 0xF0;
+    c.ram[28] = 0x10;
+    c.ram[29] = 0xF0;
+
+    //SIX - 6
+    c.ram[30] = 0xF0;
+    c.ram[31] = 0x80;
+    c.ram[32] = 0xF0;
+    c.ram[33] = 0x90;
+    c.ram[34] = 0xF0;
+
+    //SEVEN - 7
+    c.ram[35] = 0xF0;
+    c.ram[36] = 0x10;
+    c.ram[37] = 0x20;
+    c.ram[38] = 0x40;
+    c.ram[39] = 0x40;
+
+    //EIGHT - 8
+    c.ram[40] = 0xF0;
+    c.ram[41] = 0x90;
+    c.ram[42] = 0xF0;
+    c.ram[43] = 0x90;
+    c.ram[44] = 0xF0;
+
+    //NINE - 9
+    c.ram[45] = 0xF0;
+    c.ram[46] = 0x90;
+    c.ram[47] = 0xF0;
+    c.ram[48] = 0x10;
+    c.ram[49] = 0xF0;
+
+    //A - A
+    c.ram[50] = 0xF0;
+    c.ram[51] = 0x90;
+    c.ram[52] = 0xF0;
+    c.ram[53] = 0x90;
+    c.ram[54] = 0x90;
+
+    //B - B
+    c.ram[55] = 0xE0;
+    c.ram[56] = 0x90;
+    c.ram[57] = 0xE0;
+    c.ram[58] = 0x90;
+    c.ram[59] = 0xE0;
+
+    //C - C
+    c.ram[60] = 0xF0;
+    c.ram[61] = 0x80;
+    c.ram[62] = 0x80;
+    c.ram[63] = 0x80;
+    c.ram[64] = 0xF0;
+
+    //D - D
+    c.ram[65] = 0xE0;
+    c.ram[66] = 0x90;
+    c.ram[67] = 0x90;
+    c.ram[68] = 0x90;
+    c.ram[69] = 0xE0;
+
+    //E - E
+    c.ram[70] = 0xF0;
+    c.ram[71] = 0x80;
+    c.ram[72] = 0xF0;
+    c.ram[73] = 0x80;
+    c.ram[74] = 0xF0;
+
+    //F - F
+    c.ram[75] = 0xF0;
+    c.ram[76] = 0x80;
+    c.ram[77] = 0xF0;
+    c.ram[78] = 0x80;
+    c.ram[79] = 0x80;
+
 }
+
+
+CHIP *init(char *path) {
+    
+    read_rom_into_memory(path);
+    initialize_sprites();
+    
+    return &c;
+}  
+
+

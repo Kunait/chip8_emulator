@@ -101,4 +101,4 @@ uint16_t getX(uint16_t data);
 uint16_t getY(uint16_t data);
 uint16_t getN(uint16_t data);
 uint16_t getKK(uint16_t data);
-
+void drawSprite(CHIP *c, uint8_t x, uint8_t y, uint8_t n);
