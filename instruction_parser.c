@@ -252,27 +252,27 @@ void clearScreen(CHIP *c){
 //X is always second 4 bits of 16 bit instruction
 uint16_t getX(uint16_t data){
 
-    uint8_t result = data & 0x0F00;
+    uint16_t result = data & 0x0F00;
     result = result >> 8;  
     return result;  
 }
 
 //Y is always third 4 bits of 16 bit instruction
 uint16_t getY(uint16_t data){
-    uint8_t result = data & 0x00F0;
+    uint16_t result = data & 0x00F0;
     result = result >> 4;  
     return result;  
 }
 
 //N alone is always lowest 4 bits of 16 bit instruction
 uint16_t getN(uint16_t data){
-    uint8_t result = data & 0x000F; 
+    uint16_t result = data & 0x000F; 
     return result;  
 }
 
 //KK is last 8 bits of 16 bit instruction
 uint16_t getKK(uint16_t data){
-    uint8_t result = data & 0x00FF; 
+    uint16_t result = data & 0x00FF; 
     return result;
 }
 
@@ -483,7 +483,7 @@ void execute_instruction(CHIP *c, full_instr *instruction){
     case LD_SPRITE_ADDR_INTO_R:
         x = getX(instruction->data);
         digit = c->V[x];
-        c->I = c->ram[5*digit];
+        c->I = 5*digit;
         break;
     case REG_TO_H_T_O_IN_I:
         x = getX(instruction->data);
@@ -513,7 +513,7 @@ void execute_instruction(CHIP *c, full_instr *instruction){
         x = getX(instruction->data);
         y  = getY(instruction->data);
         n = getN(instruction->data);
-        drawSprite(c,x,y,n);
+        drawSprite(c,c->V[x],c->V[y],n);
         break;
     default:
         break;

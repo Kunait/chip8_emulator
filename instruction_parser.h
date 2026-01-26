@@ -25,13 +25,12 @@ uint8_t ram[RAM_SIZE];
 uint8_t V[REGISTER_COUNT];
 uint16_t I;
 uint16_t PC;
-uint8_t SP;
+uint8_t stack_pointer;
 uint8_t delay_timer;
 uint8_t sound_timer;
 uint8_t pressedKey;
 
 uint16_t stack[STACK_SIZE];
-int stack_pointer;
 uint64_t vram[VRAM_SIZE];
     
 } CHIP;

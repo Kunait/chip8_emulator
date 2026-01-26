@@ -80,11 +80,11 @@ void read_rom_into_memory(char *path){
 
 void initialize_sprites(){
     //ZERO - 0
-    c.ram[0] = 0xF0;
-    c.ram[1] = 0x90;
-    c.ram[2] = 0x90;
-    c.ram[3] = 0x90;
-    c.ram[4] = 0xF0;
+    c.ram[0] = 0xF0; 
+    c.ram[1] = 0x90; 
+    c.ram[2] = 0x90; 
+    c.ram[3] = 0x90; 
+    c.ram[4] = 0xF0; 
 
     //ONE - 1
     c.ram[5] = 0x20;
